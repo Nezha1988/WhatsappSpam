@@ -1,0 +1,178 @@
+using System;
+using System.ComponentModel;
+using System.Text;
+using System.Windows.Forms;
+using System.IO;
+using System.Diagnostics;
+
+namespace WindowsFormsApp1
+{
+    public partial class Form1 : Form
+    {
+        //Funcion para hacer los intervalos de tiempo entre las pulsaciones
+        private void Tiempo()
+        {
+            Stopwatch reloj = new Stopwatch();
+            reloj.Start();
+            while (reloj.Elapsed.Seconds <= 15)
+            {
+                byte contador = 0;
+                contador++;
+            }
+
+            reloj.Reset();
+
+        }
+        
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        public void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void textBox1_TextChanged_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            CANCEL.Enabled = true;
+            START.Enabled = true;
+            //backgroundWorker1.CancelAsync();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog OFD = new OpenFileDialog();
+            OFD.InitialDirectory = "c:\\";
+            
+            if(OFD.ShowDialog() == DialogResult.OK)
+            {
+                PhooneBookPath.Text = OFD.FileName;
+            }
+            
+        }
+
+        private void CANCEL_Click(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Application.Exit();
+        }
+
+        private void Reanudar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            backgroundWorker1.RunWorkerAsync();
+            STOP.Enabled = true;
+            START.Enabled = false;
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+
+            string MensajeEnviar, Path = "", TxtApi, nombre = "", Telefono = "", valor, fecha, codigo;
+            int i = 0;
+
+            while (PhooneBookPath.Text == "")
+            {
+                MessageBox.Show("Por favor seleccione la agenda");
+                backgroundWorker1.CancelAsync();
+                STOP.Enabled = false;
+                return;
+            }
+
+            Path = PhooneBookPath.Text;
+
+            string Mensaje = Msj.Text;
+
+            //MensajeEnviar = Mensaje.Replace(" ", "%20");
+
+            string[] lineascsv = File.ReadAllLines(Path);
+
+            string enviadocsv = Path.Replace(".csv", "Enviado.csv");
+
+            StringBuilder dato = new StringBuilder();
+
+            foreach (var linea in lineascsv)
+            {
+                    var valores = linea.Split(';');
+                    nombre = valores[0];
+                    Telefono = valores[1];
+                    valor = valores[2];
+                    fecha = valores[3];
+                    codigo = valores[4];
+                    string bloque1 = string.Format("Hola {0} Soy Nadia de ALERTAS JUDICIALES y te contacto por tu deuda vencida e IMPAGA con CARTASUR por {1} ", nombre, valor);
+                    string bloque2 = string.Format("Nos han dado la instrucción irrevocable de trabar EMBARGO sobre tu SUELDO (RECIBO DE HABERES). Para evitar la medida es necesario que abones antes del {0} ", fecha);
+                    string bloque3 = string.Format("a las 18 hs. Podes abonar en cualquier sucursal de CARTASUR con tu DNI o en Pago fácil indicando este código {0} y tú DNI. ", codigo);
+                    string bloque4 = string.Format("Si deseas enviarme un mensaje whatsapp por alguna consulta o aviso de pago ingresa acá: (http://bit.ly/2lYjDKl). " +
+                        "También podes llamar al 5258 3510.La contestación en esta conversación no podrá ser contestada.");
+
+                    MensajeEnviar = string.Format(bloque1 + bloque2 + bloque3 + bloque4);
+
+                    //MessageBox.Show(MensajeEnviar);
+
+                    MensajeEnviar = MensajeEnviar.Replace(" ", "%20");
+
+                    TxtApi = "https://api.whatsapp.com/send?phone=" + "54" + Telefono + "&text=" + MensajeEnviar;
+
+                    System.Diagnostics.Process.Start("Chrome.exe", TxtApi);
+
+                    Tiempo();
+
+                SendKeys.SendWait("{tab}");
+
+                //Tiempo();
+
+                SendKeys.SendWait("{tab}");
+
+                //Tiempo();
+
+                SendKeys.SendWait("{enter}");
+
+                Tiempo();
+
+                SendKeys.SendWait("{enter}");
+
+                Tiempo();
+
+                SendKeys.SendWait("^{F4}");
+
+                    dato.AppendLine(linea.Replace(";n", ";s"));
+            }
+
+            StreamWriter sw = new StreamWriter(enviadocsv);
+            sw.Write(dato.ToString());
+            sw.Close();
+
+            MessageBox.Show("Todos los mensaje enviados");
+
+            System.Windows.Forms.Application.Exit();
+
+            //backgroundWorker1.CancelAsync();
+
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+
+        }
+    }
+}
